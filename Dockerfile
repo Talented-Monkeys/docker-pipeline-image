@@ -39,19 +39,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Composer installieren
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Volta installieren + Default-Node-Version
+# Volta installieren + Standard-Node-Version
 RUN curl https://get.volta.sh | bash && \
     /root/.volta/bin/volta install node@$NODE_VERSION && \
     /root/.volta/bin/volta install npm bower gulp && \
     ln -s /root/.volta/bin/volta /usr/local/bin/volta
 
-# nvm Shim → übersetzt nvm install/use in Volta + passende npm-Version
+# NVM-Shim (als Wrapper für Volta)
 RUN echo '#!/bin/bash' > /usr/local/bin/nvm && \
     echo 'set -e' >> /usr/local/bin/nvm && \
     echo 'if [[ "$1" == "install" && -n "$2" ]]; then' >> /usr/local/bin/nvm && \
     echo '  VERSION="$2"' >> /usr/local/bin/nvm && \
     echo '  volta install node@$VERSION' >> /usr/local/bin/nvm && \
     echo '  case "$VERSION" in' >> /usr/local/bin/nvm && \
+    echo '    12*) volta install npm@6.14.18 ;;' >> /usr/local/bin/nvm && \
     echo '    14*) volta install npm@6.14.14 ;;' >> /usr/local/bin/nvm && \
     echo '    16*) volta install npm@8.19.4 ;;' >> /usr/local/bin/nvm && \
     echo '    18*) volta install npm@9.9.1 ;;' >> /usr/local/bin/nvm && \
